@@ -4,7 +4,26 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-api-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: |
+          mkdir -p site/
+
+      - uses: docker://asyncapi/github-action-for-generator:2.1.12
+        with:
+          filepath: docs/api/asyncapi.yaml
+          template: '@asyncapi/html-template@0.28.4'
+          output: site/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: api-docs-${{ github.sha }}
+          path: site/
+
+  build-host:
     strategy:
       matrix:
         runtime:
@@ -18,7 +37,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-dotnet@v3
+      - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 6.0.x
 
@@ -26,54 +45,86 @@ jobs:
           dotnet publish src/EdcHost/EdcHost.csproj -c Release -o bin \
           --sc false -r ${{ matrix.runtime }} -p:DebugType=none \
           -p:PublishSingleFile=true
+        working-directory: host
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
-          name: edchost-${{ matrix.runtime }}-${{ github.sha }}
-          path: bin
+          name: ${{ github.repository.name }}-host-${{ matrix.runtime }}-${{ github.sha }}
+          path: host/bin
 
-  check-style:
+  build-viewer:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-dotnet@v3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 16
+
+      - run: |
+          npm ci
+        working-directory: viewer
+
+      - run: |
+          npm run build
+        working-directory: viewer
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.repository.name }}-viewer-${{ github.sha }}
+          path: viewer/build
+
+  build-pages:
+    needs:
+      - build-api-docs
+      - build-viewer
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: api-docs-${{ github.sha }}
+          path: site/api
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: ${{ github.repository.name }}-viewer-${{ github.sha }}
+          path: site/viewer
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  check-style-host:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 6.0.x
 
       - run: dotnet format --verify-no-changes src/EdcHost
+        working-directory: host
 
       - run: dotnet format --verify-no-changes src/EdcHost.Tests
+        working-directory: host
 
-  deploy-documentation:
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    needs: generate-documentation
+  deploy-pages:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    needs: build-pages
     permissions:
       id-token: write
       pages: write
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/deploy-pages@v2
+      - id: deployment
+        uses: actions/deploy-pages@v4
 
-  generate-documentation:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - run: |
-          mkdir -p site/api/
-
-      - uses: docker://asyncapi/github-action-for-generator:2.1.12
-        with:
-          filepath: docs/api/asyncapi.yaml
-          template: '@asyncapi/html-template@0.28.4'
-          output: site/api/
-
-      - uses: actions/upload-pages-artifact@v2
-        with:
-          path: site/
-
-  test:
+  test-host:
     strategy:
       matrix:
         runs-on:
@@ -84,9 +135,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-dotnet@v3
+      - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 6.0.x
 
       - run: |
           dotnet test src/EdcHost.Tests/EdcHost.Tests.csproj
+        working-directory: host
