@@ -33,13 +33,13 @@ jobs:
           cp -r host/bin/* release/
 
       - run: |
-          zip -r ../${{ github.repository.name }}-host-${{ matrix.runtime }}.zip *
+          zip -r ../${{ github.event.repository.name }}-host-${{ matrix.runtime }}.zip *
         working-directory: release
 
       - uses: softprops/action-gh-release@v2
         with:
           files: |
-            ${{ github.repository.name }}-host-${{ matrix.runtime }}.zip
+            ${{ github.event.repository.name }}-host-${{ matrix.runtime }}.zip
 
   build-viewer:
     runs-on: ubuntu-latest
@@ -63,13 +63,13 @@ jobs:
           cp -r viewer/build/* release/
 
       - run: |
-          zip -r ../${{ github.repository.name }}-viewer.zip *
+          zip -r ../${{ github.event.repository.name }}-viewer.zip *
         working-directory: release
 
       - uses: softprops/action-gh-release@v2
         with:
           files: |
-            ${{ github.repository.name }}-viewer.zip
+            ${{ github.event.repository.name }}-viewer.zip
 
   create-release-notes:
     permissions:

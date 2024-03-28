@@ -49,7 +49,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ${{ github.repository.name }}-host-${{ matrix.runtime }}-${{ github.sha }}
+          name: ${{ github.event.repository.name }}-host-${{ matrix.runtime }}-${{ github.sha }}
           path: host/bin
 
   build-viewer:
@@ -71,7 +71,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ${{ github.repository.name }}-viewer-${{ github.sha }}
+          name: ${{ github.event.repository.name }}-viewer-${{ github.sha }}
           path: viewer/build
 
   build-pages:
@@ -89,7 +89,7 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: ${{ github.repository.name }}-viewer-${{ github.sha }}
+          name: ${{ github.event.repository.name }}-viewer-${{ github.sha }}
           path: site/viewer
 
       - uses: actions/upload-pages-artifact@v3
