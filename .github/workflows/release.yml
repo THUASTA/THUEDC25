@@ -29,7 +29,7 @@ jobs:
         working-directory: host
 
       - run: |
-          cp CHANGELOG.md COPYING host/README.md release/
+          cp CHANGELOG.md COPYING README.md release/
           cp -r host/bin/* release/
 
       - run: |
@@ -59,7 +59,7 @@ jobs:
         working-directory: viewer
 
       - run: |
-          cp CHANGELOG.md COPYING release/
+          cp CHANGELOG.md COPYING README.md release/
           cp -r viewer/build/* release/
 
       - run: |
