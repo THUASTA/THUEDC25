@@ -1,6 +1,6 @@
-# EDCHost
+# host
 
-The official host program for Electronic Design Competition
+Host program for THUEDC25 platform
 
 ## Install
 
