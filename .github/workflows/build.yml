@@ -84,7 +84,7 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: api-docs-${{ github.sha }}
+          name: ${{ github.event.repository.name }}-api-docs-${{ github.sha }}
           path: site/api
 
       - uses: actions/download-artifact@v4
