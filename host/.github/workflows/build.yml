@@ -1,0 +1,92 @@
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        runtime:
+          - linux-arm
+          - linux-arm64
+          - ubuntu-x64
+          - win-arm64
+          - win-x64
+          - win-x86
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 6.0.x
+
+      - run: |
+          dotnet publish src/EdcHost/EdcHost.csproj -c Release -o bin \
+          --sc false -r ${{ matrix.runtime }} -p:DebugType=none \
+          -p:PublishSingleFile=true
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: edchost-${{ matrix.runtime }}-${{ github.sha }}
+          path: bin
+
+  check-style:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 6.0.x
+
+      - run: dotnet format --verify-no-changes src/EdcHost
+
+      - run: dotnet format --verify-no-changes src/EdcHost.Tests
+
+  deploy-documentation:
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: generate-documentation
+    permissions:
+      id-token: write
+      pages: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/deploy-pages@v2
+
+  generate-documentation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: |
+          mkdir -p site/api/
+
+      - uses: docker://asyncapi/github-action-for-generator:2.1.12
+        with:
+          filepath: docs/api/asyncapi.yaml
+          template: '@asyncapi/html-template@0.28.4'
+          output: site/api/
+
+      - uses: actions/upload-pages-artifact@v2
+        with:
+          path: site/
+
+  test:
+    strategy:
+      matrix:
+        runs-on:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+    runs-on: ${{ matrix.runs-on }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 6.0.x
+
+      - run: |
+          dotnet test src/EdcHost.Tests/EdcHost.Tests.csproj

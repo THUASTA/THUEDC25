@@ -1,0 +1,24 @@
+.inventory-item-container {
+    position: relative;
+    width: 48px;
+}
+
+.inventory-item-icon {
+    width: 36px;
+    height: 36px;
+}
+
+.inventory-item-count {
+    left: 22px;
+    top: 22px;
+    width: 20px;
+    height: 20px;
+    text-align: center;
+    border: 1px solid;
+    border-color: #828282;
+    border-radius: 10px;
+    position: absolute;
+    font-size: 14px;
+    font-weight: bold;
+    background-color: #ffffff;
+}

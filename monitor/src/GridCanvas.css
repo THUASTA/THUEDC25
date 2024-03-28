@@ -1,0 +1,29 @@
+.grid-canvas {
+    border-color: Black;
+    border-width: 1px;
+    border: solid;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+}
+
+.grid-layer {
+    z-index: 0;
+}
+
+.logo-layer {
+    z-index: 1;
+}
+
+.height-layer {
+    z-index: 2;
+}
+
+.player-layer {
+    z-index: 3;
+}
+
+.control-layer {
+    z-index: 4;
+}

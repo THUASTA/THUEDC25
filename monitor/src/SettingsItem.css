@@ -1,0 +1,33 @@
+.settings-container {
+    padding: 10px;
+}
+
+.settings-title {
+    padding: 10px;
+    font-size: 20px;
+    font-weight: bold;
+    color: #000000;
+}
+
+.settings-item {
+    display: flex;
+    justify-content: center;
+}
+
+.settings-item-label {
+    width: 100px;
+    text-align: right;
+    margin-right: 10px;
+    color: #6e6e6e;
+}
+
+.settings-item-value-container {
+    width : 160px;
+    display: flex;
+    justify-content: space-around;
+    gap: 10px;
+}
+
+.color-value {
+    width: 60px;
+}

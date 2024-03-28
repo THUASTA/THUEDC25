@@ -1,0 +1,501 @@
+asyncapi: "2.6.0"
+info:
+  title: Viewer API
+  version: ""
+channels:
+  /competition/control:
+    subscribe:
+      message:
+        oneOf:
+          - $ref: "#/components/messages/Error"
+          - $ref: "#/components/messages/HostConfigurationFromServer"
+    publish:
+      message:
+        oneOf:
+          - $ref: "#/components/messages/CompetitionControlCommand"
+          - $ref: "#/components/messages/HostConfigurationFromClient"
+  /competition/updates:
+    subscribe:
+      message:
+        oneOf:
+          - $ref: "#/components/messages/CompetitionUpdate"
+          - $ref: "#/components/messages/Error"
+components:
+  messages:
+    CompetitionControlCommand:
+      payload:
+        type: object
+        additionalProperties: false
+        required:
+          - messageType
+          - token
+          - command
+        properties:
+          messageType:
+            type: string
+            const: COMPETITION_CONTROL_COMMAND
+          token:
+            type: string
+          command:
+            type: string
+            enum:
+              - START
+              - END
+              - RESET
+              - GET_HOST_CONFIGURATION
+    CompetitionUpdate:
+      payload:
+        type: object
+        additionalProperties: false
+        properties:
+          messageType:
+            type: string
+            const: COMPETITION_UPDATE
+          cameras:
+            type: array
+            items:
+              type: object
+              additionalProperties: false
+              required:
+                - cameraId
+                - frameData
+                - height
+                - width
+              properties:
+                cameraId:
+                  type: integer
+                frameData:
+                  type: string
+                  format: binary
+                height:
+                  type: integer
+                width:
+                  type: integer
+          chunks:
+            type: array
+            items:
+              type: object
+              additionalProperties: false
+              required:
+                - chunkId
+                - height
+                - position
+              properties:
+                chunkId:
+                  type: integer
+                height:
+                  type: integer
+                position:
+                  $ref: "#/components/schemas/PositionInt"
+          events:
+            type: array
+            items:
+              oneOf:
+                - $ref: "#/components/schemas/PlayerAttackEvent"
+                - $ref: "#/components/schemas/PlayerDigEvent"
+                - $ref: "#/components/schemas/PlayerPickUpEvent"
+                - $ref: "#/components/schemas/PlayerPlaceBlockEvent"
+                - $ref: "#/components/schemas/PlayerTryAttackEvent"
+                - $ref: "#/components/schemas/PlayerTryUseEvent"
+          info:
+            type: object
+            additionalProperties: false
+            required:
+              - elapsedTicks
+              - stage
+            properties:
+              elapsedTicks:
+                type: integer
+              stage:
+                type: integer
+                enum:
+                  - READY
+                  - RUNNING
+                  - BATTLING
+                  - FINISHED
+                  - ENDED
+          mines:
+            type: array
+            items:
+              type: object
+              additionalProperties: false
+              required:
+                - mineId
+                - accumulatedOreCount
+                - oreType
+                - position
+              properties:
+                mineId:
+                  type: string
+                accumulatedOreCount:
+                  type: integer
+                oreType:
+                  type: integer
+                  enum:
+                    - IRON_ORE
+                    - GOLD_ORE
+                    - DIAMOND_ORE
+                position:
+                  $ref: "#/components/schemas/PositionInt"
+          players:
+            type: array
+            additionalProperties: false
+            required:
+              - playerId
+              - attributes
+              - health
+              - homePosition
+              - inventory
+              - position
+            properties:
+              playerId:
+                type: integer
+              attributes:
+                type: object
+                additionalProperties: false
+                required:
+                  - agility
+                  - maxHealth
+                  - strength
+                properties:
+                  agility:
+                    type: integer
+                  maxHealth:
+                    type: integer
+                  strength:
+                    type: integer
+              health:
+                type: integer
+              homePosition:
+                $ref: "#/components/schemas/Position"
+              inventory:
+                type: object
+                additionalProperties: false
+                required:
+                  - emerald
+                  - wool
+                properties:
+                  emerald:
+                    type: integer
+                  wool:
+                    type: integer
+              position:
+                $ref: "#/components/schemas/Position"
+    Error:
+      payload:
+        type: object
+        additionalProperties: false
+        required:
+          - messageType
+          - errorCode
+          - message
+        properties:
+          messageType:
+            type: string
+            const: ERROR
+          errorCode:
+            type: integer
+          message:
+            type: string
+    HostConfigurationFromClient:
+      payload:
+        type: object
+        additionalProperties: false
+        required:
+          - messageType
+          - token
+          - configuration
+        properties:
+          messageType:
+            type: string
+            const: HOST_CONFIGURATION_FROM_CLIENT
+          token:
+            type: string
+          configuration:
+            $ref: "#/components/schemas/HostConfiguration"
+    HostConfigurationFromServer:
+      payload:
+        type: object
+        additionalProperties: false
+        required:
+          - messageType
+          - availableCameras
+          - availableSerialPorts
+          - configuration
+        properties:
+          messageType:
+            type: string
+            const: HOST_CONFIGURATION_FROM_SERVER
+          availableCameras:
+            type: array
+            items:
+              type: integer
+          availableSerialPorts:
+            type: array
+            items:
+              type: string
+          configuration:
+            $ref: "#/components/schemas/HostConfiguration"
+  schemas:
+    PlayerAttackEvent:
+      type: object
+      additionalProperties: false
+      required:
+        - eventType
+        - playerId
+        - targetPlayerId
+      properties:
+        eventType:
+          type: string
+          const: PLAYER_ATTACK
+        playerId:
+          type: integer
+        targetPlayerId:
+          type: integer
+    PlayerDigEvent:
+      type: object
+      additionalProperties: false
+      required:
+        - eventType
+        - playerId
+        - targetChunk
+      properties:
+        eventType:
+          type: string
+          const: PLAYER_DIG
+        playerId:
+          type: integer
+        targetChunk:
+          type: integer
+    PlayerPickUpEvent:
+      type: object
+      additionalProperties: false
+      required:
+        - eventType
+        - playerId
+        - itemType
+        - itemCount
+        - mineId
+      properties:
+        eventType:
+          type: string
+          const: PLAYER_PICK_UP
+        playerId:
+          type: integer
+        itemType:
+          type: string
+          enum:
+            - IRON_INGOT
+            - GOLD_INGOT
+            - DIAMOND
+        itemCount:
+          type: integer
+        mineId:
+          type: string
+    PlayerPlaceBlockEvent:
+      type: object
+      additionalProperties: false
+      required:
+        - eventType
+        - playerId
+        - blockType
+      properties:
+        eventType:
+          type: string
+          const: PLAYER_PLACE_BLOCK
+        playerId:
+          type: integer
+        blockType:
+          type: string
+          enum:
+            - WOOL
+    PlayerTryAttackEvent:
+      type: object
+      additionalProperties: false
+      required:
+        - eventType
+        - playerId
+        - targetChunk
+      properties:
+        eventType:
+          type: string
+          const: PLAYER_TRY_ATTACK
+        playerId:
+          type: integer
+        targetChunk:
+          type: integer
+    PlayerTryUseEvent:
+      type: object
+      additionalProperties: false
+      required:
+        - eventType
+        - playerId
+        - targetChunk
+      properties:
+        eventType:
+          type: string
+          const: PLAYER_TRY_USE
+        playerId:
+          type: integer
+        targetChunk:
+          type: integer
+    Position:
+      type: object
+      additionalProperties: false
+      required:
+        - x
+        - y
+      properties:
+        x:
+          type: number
+        y:
+          type: number
+    PositionInt:
+      type: object
+      additionalProperties: false
+      required:
+        - x
+        - y
+      properties:
+        x:
+          type: integer
+        y:
+          type: integer
+    HostConfiguration:
+      type: object
+      additionalProperties: false
+      required:
+        - cameras
+        - players
+        - serialPorts
+      properties:
+        cameras:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required:
+              - cameraId
+            properties:
+              cameraId:
+                type: integer
+              calibration:
+                type: object
+                additionalProperties: false
+                required:
+                  - topLeft
+                  - topRight
+                  - bottomLeft
+                  - bottomRight
+                properties:
+                  topLeft:
+                    $ref: "#/components/schemas/Position"
+                  topRight:
+                    $ref: "#/components/schemas/Position"
+                  bottomLeft:
+                    $ref: "#/components/schemas/Position"
+                  bottomRight:
+                    $ref: "#/components/schemas/Position"
+              properties:
+                type: object
+                additionalProperties: false
+                properties:
+                  frameWidth:
+                    type: number
+                  frameHeight:
+                    type: number
+                  fps:
+                    type: number
+                  brightness:
+                    type: number
+                  contrast:
+                    type: number
+                  saturation:
+                    type: number
+                  hue:
+                    type: number
+                  gain:
+                    type: number
+                  exposure:
+                    type: number
+                  monocrome:
+                    type: number
+                  sharpness:
+                    type: number
+                  autoExposure:
+                    type: number
+                  gamma:
+                    type: number
+                  temperature:
+                    type: number
+                  whiteBalanceRedV:
+                    type: number
+                  zoom:
+                    type: number
+                  focus:
+                    type: number
+                  isoSpeed:
+                    type: number
+                  iris:
+                    type: number
+                  autofocus:
+                    type: number
+                  autoWb:
+                    type: number
+                  wbTemperature:
+                    type: number
+              recognition:
+                type: object
+                additionalProperties: false
+                required:
+                  - hueCenter
+                  - hueRange
+                  - saturationCenter
+                  - saturationRange
+                  - valueCenter
+                  - valueRange
+                  - minArea
+                  - showMask
+                properties:
+                  hueCenter:
+                    type: number
+                  hueRange:
+                    type: number
+                  saturationCenter:
+                    type: number
+                  saturationRange:
+                    type: number
+                  valueCenter:
+                    type: number
+                  valueRange:
+                    type: number
+                  minArea:
+                    type: number
+                  showMask:
+                    type: boolean
+        players:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required:
+              - playerId
+            properties:
+              playerId:
+                type: integer
+              camera:
+                type: integer
+              serialPort:
+                type: string
+        serialPorts:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required:
+              - portName
+            properties:
+              portName:
+                type: string
+              baudRate:
+                type: integer

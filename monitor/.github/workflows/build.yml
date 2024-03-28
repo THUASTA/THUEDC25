@@ -1,0 +1,39 @@
+on:
+  pull_request:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - run: |
+          npm ci
+
+      - run: |
+          npm run build
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: edcviewer-${{ github.sha }}
+          path: build/
+
+      - uses: actions/upload-pages-artifact@v2
+        with:
+          path: build/
+
+  deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: build
+    permissions:
+      id-token: write
+      pages: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/deploy-pages@v2

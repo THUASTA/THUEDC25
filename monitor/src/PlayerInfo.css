@@ -1,0 +1,43 @@
+.player-info-label {
+    padding: 10px;
+    font-size: 24px;
+    font-weight: bold;
+    color: #000000;
+}
+
+.player-info-attr-label {
+    font-size: 20px;
+    color: #6e6e6e;
+}
+
+.player-info-attr-val {
+    font-size: 20px;
+    text-align: right;
+    color: #000000;
+}
+
+.player-info-container {
+    width: 45%;
+}
+
+.player-info-attr-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.player-info-attr-container {
+    width: 40%;
+    padding-left: 10px;
+    padding-right: 10px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.player-info-inventory-container {
+    width: 45%;
+    padding-left: 10px;
+    padding-right: 10px;
+    display: flex;
+    justify-content: space-between;
+}
