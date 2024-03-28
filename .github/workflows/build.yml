@@ -74,10 +74,34 @@ jobs:
           name: ${{ github.event.repository.name }}-viewer-${{ github.sha }}
           path: viewer/build
 
-  build-pages:
+  check-style-host:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 6.0.x
+
+      - run: dotnet format --verify-no-changes src/EdcHost
+        working-directory: host
+
+      - run: dotnet format --verify-no-changes src/EdcHost.Tests
+        working-directory: host
+
+  deploy-pages:
+    concurrency:
+      group: github-pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     needs:
       - build-api-docs
       - build-viewer
+    permissions:
+      id-token: write
+      pages: write
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -96,31 +120,6 @@ jobs:
         with:
           path: site
 
-  check-style-host:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 6.0.x
-
-      - run: dotnet format --verify-no-changes src/EdcHost
-        working-directory: host
-
-      - run: dotnet format --verify-no-changes src/EdcHost.Tests
-        working-directory: host
-
-  deploy-pages:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    needs: build-pages
-    permissions:
-      id-token: write
-      pages: write
-    runs-on: ubuntu-latest
-    steps:
       - id: deployment
         uses: actions/deploy-pages@v4
 
