@@ -67,4 +67,4 @@ PRs accepted.
 
 ## License
 
-GPL-3.0-only © THUASTA
+GPL-3.0-only © Student Association of Science and Technology, Department of Automation, Tsinghua University
