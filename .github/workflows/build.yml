@@ -25,6 +25,7 @@ jobs:
 
   build-host:
     strategy:
+      fail-fast: false
       matrix:
         runtime:
           - linux-arm
@@ -126,6 +127,7 @@ jobs:
 
   test-host:
     strategy:
+      fail-fast: false
       matrix:
         runs-on:
           - ubuntu-latest

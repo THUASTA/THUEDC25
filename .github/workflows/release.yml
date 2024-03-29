@@ -7,6 +7,7 @@ jobs:
   build-host:
     needs: create-release-notes
     strategy:
+      fail-fast: false
       matrix:
         runtime:
           - linux-arm
